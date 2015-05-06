@@ -2,6 +2,8 @@
 $imgs = @$_GET["image"];
 $image = false;
 if (isset($imgs)) {
+
+  // Split the parameters of the URL to get width, height and Image URL
   $img = explode("/i/", $imgs);
   list($w, $h) = explode("/", $img[0]);
   $w = intval($w);
@@ -12,12 +14,16 @@ if (isset($imgs)) {
   $image = "http://" . $image;
 }
 
+// Cache the image
 function headerCache() {
+
+  // Cache expires after a year
   $cache_expire = 60 * 60 * 24 * 365;
   header("Pragma: public");
   header("Cache-Control: max-age=" . $cache_expire);
   header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $cache_expire) . ' GMT');
 }
+
 function resize_pic($img, $x, $y) {
   $img = urldecode($img);
   if ($img && strlen($img) > 5) {
@@ -61,16 +67,15 @@ function resize_pic($img, $x, $y) {
       }
       try {
         $new_img = imagecreatetruecolor($newx, $newy);
+
+        // Preserve Opacity
         if ($final_ext == ".gif" || $final_ext == ".png") {
           imagecolortransparent($new_img, imagecolorallocatealpha($new_img, 0, 0, 0, 127));
           imagealphablending($new_img, false);
           imagesavealpha($new_img, true);
         }
-        if (!$new_img); {
 
-          //throw new Exception("could not save");
-
-        }
+        // Re-Paint Image
         imagecopyresampled($new_img, $img_old, 0, 0, 0, 0, $newx, $newy, $xx, $yy);
       }
       catch(Exception $err) {
@@ -97,16 +102,22 @@ function resize_pic($img, $x, $y) {
           break;
 
         default:
+
+          // Redirect to the original image if the format is not supported
           header("location: $img");
           break;
       }
       exit();
     }
     else {
+
+      // Redirect to the original image if the format is not supported
       header("location: $img");
     }
   }
   else {
+
+    // Redirect to the original when in doubt of the processed image url's validity
     header("location: $img");
   }
 }
